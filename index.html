@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Password</title>
+
+    <style>
+    /* Typography */
+    :root {
+        font-size: 16px;
+    }
+    @media (min-width: 320px) and (max-width: 1200px) {
+        :root {
+            font-size: calc(16px + (28 - 16) * ((100vw - 320px) / (1200 - 320)));
+        }
+    }
+    @media (min-width: 1200px) {
+        :root {
+            font-size: 28px;
+        }
+    }
+    html {
+        font-family: sans-serif;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+    body {
+        line-height: 1.75;
+        font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        margin: 0.8em;
+        text-align: center;
+    }
+
+    /* More */
+    button, input { font-family: inherit; font-size: inherit; }
+
+    /* Other */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    /* Form */
+    #newPwd {
+        font-family: Consolas, Terminal, 'Courier New', Sans-serif;
+        width: 100%;
+    }
+    .column { width: 9em; float: left; text-align: left; }
+    </style>
+</head>
+<body>
+    <form action="?" method="get" style="display:inline-block">
+        <p><input type="text" id="newPwd" value="" size="20"></p>
+        <div class="column">
+            <div>
+                <label for="size">Size</label>
+                <input type="number" class="input-control" id="pwdSize" value="12" style="width: 2.5em">
+            </div>
+            <div>
+                <input type="radio" class="input-control radio-control" id="easyToSay" name="easy" value="say">
+                <label for="easyToSay">Easy to say</label>
+            </div>
+            <div>
+                <input type="radio" class="input-control radio-control" id="easyToRead" name="easy" value="read" checked="checked">
+                <label for="easyToRead">Easy to read</label>
+            </div>
+            <div>
+                <input type="radio" class="input-control radio-control" id="all" name="easy" value="all">
+                <label for="all">All characters</label>
+            </div>
+        </div>
+        <div class="column">
+            <div>
+                <input type="checkbox" class="input-control" id="upper" name="upper" value="1" checked="checked">
+                <label for="upper">Uppercase</label>
+            </div>
+            <div>
+                <input type="checkbox" class="input-control" id="lower" name="lower" value="1" checked="checked">
+                <label for="lower">Lowercase</label>
+            </div>
+            <div>
+                <input type="checkbox" class="input-control" id="numbers" name="numbers" value="1" checked="checked">
+                <label for="numbers">Numbers</label>
+            </div>
+            <div>
+                <input type="checkbox" class="input-control" id="symbols" name="symbols" value="1" checked="checked">
+                <label for="symbols">Symbols</label>
+            </div>
+        </div>
+        <p style="clear:both;padding-top:0.5em"><input type="button" class="btn btn-success" id="generatePwd" value="Generate"></p>
+    </form>
+
+    <script>
+    /* IE11 Array.fill() Polyfill */
+    if(!Array.prototype.fill){Object.defineProperty(Array.prototype,'fill',{value:function(value){if(this==null){throw new TypeError('this is null or not defined')}var O=Object(this);var len=O.length>>>0;var start=arguments[1];var relativeStart=start>>0;var k=relativeStart<0?Math.max(len+relativeStart,0):Math.min(relativeStart,len);var end=arguments[2];var relativeEnd=end===undefined?len:end>>0;var finalValue=relativeEnd<0?Math.max(len+relativeEnd,0):Math.min(relativeEnd,len);while(k<finalValue){O[k]=value;k+=1}return O}})}
+
+    /* Password Generator */
+    var generatePwdEl = document.getElementById('generatePwd');
+    generatePwdEl.addEventListener('click', function(e) {
+        e.preventDefault();
+        generatePassword();
+    });
+
+    var radioControlEls = document.querySelectorAll('.radio-control');
+    Array.prototype.forEach.call(radioControlEls, function(el, i) {
+        el.addEventListener('click', function(e) {
+            var numbersEl = document.getElementById('numbers');
+            var symbolsEl = document.getElementById('symbols');
+            if (document.getElementById('easyToSay').checked) {
+                numbersEl.checked = false;
+                numbersEl.disabled = true;
+                symbolsEl.checked = false;
+                symbolsEl.disabled = true;
+            }
+            else {
+                numbersEl.checked = true;
+                numbersEl.disabled = false;
+                symbolsEl.checked = true;
+                symbolsEl.disabled = false;
+            }
+        });
+    });
+
+    var controlEls = document.querySelectorAll('.input-control');
+    Array.prototype.forEach.call(controlEls, function(el, i) {
+        el.addEventListener('change', function() {
+            generatePassword();
+        });
+    });
+
+    generatePassword();
+
+    function generatePassword() {
+        var specialChars = '*%!@$^#&';
+        var upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        var lowerChars = 'abcdefghijklmnopqrstuvwxyz';
+        var numberChars = '0123456789';
+        var nonReadableChars = 'OIl01';
+
+        var pwdChars = '';
+
+        if (document.getElementById('upper').checked) pwdChars += upperChars;
+        if (document.getElementById('lower').checked) pwdChars += lowerChars;
+        if (document.getElementById('numbers').checked) pwdChars += numberChars;
+        if (document.getElementById('symbols').checked) pwdChars += specialChars;
+
+        if (document.getElementById('easyToSay').checked) {
+            var regex = new RegExp('['+numberChars+specialChars+']', 'g');
+            pwdChars = pwdChars.replace(regex, '');
+        }
+        else if (document.getElementById('easyToRead').checked) {
+            var regex = new RegExp('['+nonReadableChars+']', 'g');
+            pwdChars = pwdChars.replace(regex, '');
+        }
+
+        var pwdLen = +document.getElementById('pwdSize').value;
+        var randPassword = Array(pwdLen).fill(pwdChars).map(function(x) { return x[Math.floor(Math.random() * x.length)] }).join('');
+        document.getElementById('newPwd').value = randPassword;
+    }
+    </script>
+</body>
+</html>
